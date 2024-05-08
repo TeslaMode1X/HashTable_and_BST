@@ -3,93 +3,129 @@ import java.util.Stack;
 
 public class BST<K extends Comparable<K>, V> implements Iterable<K> {
     private Node root;
-    private int size;
     private class Node {
         private K key;
         private V value;
+        int length;
         private Node left, right;
         private Node (K key, V value) {
             this.key = key;
             this.value = value;
+            length = 1;
         }
     }
 
     public void put(K key, V value) {
+
         Node newNode = new Node(key, value);
-        root = put(root, newNode);
+
+        if (root == null) {
+            root = newNode;
+            return;
+        }
+
+        Node current = root;
+
+        while (true) {
+            int compareNum = newNode.key.compareTo(current.key);
+
+            if (compareNum < 0) {
+                if (current.left == null) {
+                    current.left = newNode;
+                    break;
+                } else {
+                    current = current.left;
+                }
+            } else if (compareNum > 0) {
+                if (current.right == null) {
+                    current.right = newNode;
+                    break;
+                } else {
+                    current = current.right;
+                }
+            } else {
+                current.value = newNode.value;
+                break;
+            }
+        }
+
+        int leftLength = 0, rightLength = 0;
+
+        if (current.left != null) {
+            rightLength = current.left.length;
+        }
+        if (current.right != null) {
+            leftLength = current.right.length;
+        }
+
+        current.length = 1 + leftLength + rightLength;
+
     }
 
     public V get(K key) {
-        Node rootTemp = root;
-        return get(root, key);
+
+        Node current = root;
+
+        while (current != null) {
+
+            int compareNum = key.compareTo(current.key);
+
+            if (compareNum < 0) {
+                current = current.left;
+            } else if (compareNum > 0) {
+                current = current.right;
+            } else {
+                return current.value;
+            }
+        }
+
+        return null;
     }
 
     public void delete(K key) {
-        root = delete(root, key);
+        Node parent = null;
+        Node current = root;
+
+        while (current != null) {
+            int compareNum = key.compareTo(current.key);
+
+            if (compareNum < 0) {
+                parent = current;
+                current = current.left;
+            } else if (compareNum > 0) {
+                parent = current;
+                current = current.right;
+            } else {
+                if (current.right == null) {
+                    if (parent == null) {
+                        root = current.left;
+                    } else if (current == parent.left) {
+                        parent.left = current.left;
+                    } else {
+                        parent.right = current.left;
+                    }
+                    break;
+                }
+
+                if (current.left == null) {
+                    if (parent == null) {
+                        root = current.right;
+                    } else if (current == parent.left) {
+                        parent.left = current.right;
+                    } else {
+                        parent.right = current.right;
+                    }
+                    break;
+                }
+
+                Node temp = min(current.right);
+                current.key = temp.key;
+                current.value = temp.value;
+                current.right = deleteMin(current.right);
+            }
+        }
     }
 
-    private Node put(Node root, Node newNode) {
-
-        if (root == null) {
-            size++;
-            return new Node(newNode.key, newNode.value);
-        }
-
-        int compareNum = newNode.key.compareTo(root.key);
-
-        if (compareNum < 0) {
-            root.left = put(root.left, newNode);
-        } else if (compareNum > 0) {
-            root.right = put(root.right, newNode);
-        } else {
-            root.value = newNode.value;
-        }
-
-        return root;
-    }
-
-    private V get(Node root, K key) {
-
-        if (root == null) {
-            return null;
-        }
-
-        int compareNum = key.compareTo(root.key);
-
-        if (compareNum < 0) {
-            return get(root.left, key);
-        } else if (compareNum > 0) {
-            return get(root.right, key);
-        } else {
-            return root.value;
-        }
-    }
-
-    private Node delete(Node root, K key) {
-
-        if (root == null) {
-            return null;
-        }
-
-        int compareNum = key.compareTo(root.key);
-
-        if (compareNum < 0) {
-            root.left = delete(root.left, key);
-        } else if (compareNum > 0) {
-            root.right = delete(root.right, key);
-        } else {
-            if (root.right == null) return root.left;
-            if (root.left == null) return root.right;
-
-            Node temp = min(root.right);
-            root.key = temp.key;
-            root.value = temp.value;
-            root.right = deleteMin(root.right);
-            size--;
-        }
-
-        return root;
-    }
 
     private Node min(Node x) {
         if (x.left == null) {
@@ -107,7 +143,7 @@ public class BST<K extends Comparable<K>, V> implements Iterable<K> {
     }
 
     public int length() {
-        return size;
+        return root.length;
     }
 
     @Override

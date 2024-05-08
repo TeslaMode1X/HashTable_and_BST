@@ -33,8 +33,9 @@ public class Main {
         bst.put(4, 7);
         bst.put(7, 8);
         bst.put(13, 9);
+        bst.delete(13);
 
-        for (Integer i : bst) {
+        for (var i : bst) {
             System.out.println(i);
         }
     }
